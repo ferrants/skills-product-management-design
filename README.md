@@ -1,6 +1,6 @@
 # Product Management & Design Skills
 
-A collection of [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skills that help product managers and designers go from idea to execution — write PRDs, explore interface designs, and break specs into actionable tickets, all within your terminal.
+A collection of skills for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) and [Claude Desktop](https://claude.ai/download) that help product managers and designers go from idea to execution — write PRDs, explore interface designs, and break specs into actionable tickets.
 
 ## Skills
 
@@ -26,11 +26,13 @@ Takes a PRD stored in Linear and slices it into independently-grabbable Linear i
 
 ### Prerequisites
 
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI installed
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI **or** [Claude Desktop](https://claude.ai/download)
 - A [Linear](https://linear.app) workspace (for PRD publishing and ticket creation)
-- Linear MCP server configured in Claude Code
+- Linear MCP server configured in Claude Code or Claude Desktop
 
 ### Installation
+
+#### Claude Code
 
 Add this skill set to your Claude Code configuration:
 
@@ -44,6 +46,10 @@ Or clone and add locally:
 git clone https://github.com/ferrants/skills-product-management-design.git
 claude skill add --from ./skills-product-management-design
 ```
+
+#### Claude Desktop
+
+Clone the repository and add each skill's contents to your Claude Desktop [project instructions](https://support.anthropic.com/en/articles/9517075-what-are-projects), or copy individual `SKILL.md` files into your project's custom instructions field.
 
 ## Workflow
 
