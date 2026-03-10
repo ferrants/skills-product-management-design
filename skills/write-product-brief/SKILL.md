@@ -1,124 +1,74 @@
 ---
-name: brief-to-tickets
-description: Generate implementation plans as Linear issues/tickets from a PRD stored in Linear. Use this skill when the user wants to break a PRD into tasks, create implementation tickets, generate a plan from a product brief, or turn a Linear document into actionable Linear issues. Also trigger when the user mentions "tickets from PRD", "break down the PRD", "create tasks from the spec", or wants to go from planning to execution in Linear.
+name: write-product-brief
+description: Help the user write a Product Brief or PRD and publish it to Linear. Use this skill when the user wants to create or update a PRD, product brief, or product spec, especially when they want it saved to Linear as a document.
 ---
 
-# Brief to Tickets
+This skill will be invoked when the user wants to create a PRD. You should go through the steps below. You may skip steps if you don't consider them necessary.
 
-Break a PRD (stored as a Linear document) into independently-grabbable Linear issues using vertical slices (tracer bullets).
+1. Ask the user for a long, detailed description of the problem they want to solve and any potential ideas for solutions.
 
-This skill is the natural follow-up to the **write-product-brief** skill, which creates PRDs as Linear documents. Once a PRD exists in Linear, this skill turns it into actionable tickets.
+2. Explore the repo to verify their assertions and understand the current state of the codebase.
 
-## Process
+3. Interview the user relentlessly about every aspect of this plan until you reach a shared understanding. Walk down each branch of the design tree, resolving dependencies between decisions one-by-one.
 
-### 1. Locate the PRD in Linear
+4. Sketch out the major modules you will need to build or modify to complete the implementation. Actively look for opportunities to extract deep modules that can be tested in isolation.
 
-Ask the user which PRD to break down. Use Linear MCP tools to find it:
+A deep module (as opposed to a shallow module) is one which encapsulates a lot of functionality in a simple, testable interface which rarely changes.
 
-- Use `Linear:list_documents` to search for the PRD by name or browse recent documents. You can filter by project if the user specifies one.
-- Use `Linear:get_document` to retrieve the full PRD content once identified.
+Check with the user that these modules match their expectations. Check with the user which modules they want tests written for.
 
-If the user provides a document ID or slug directly, fetch it with `Linear:get_document`. If they give a name, search with `Linear:list_documents` using the `query` parameter.
+5. Once you have a complete understanding of the problem and solution, use the template below to write the PRD. The PRD should then be created as a new Linear document (or update an existing one if the user specifies). Use the Linear MCP tools to create or update the document in the user's Linear workspace. Ask the user which project or team the document should belong to if it's not already clear from context.
 
-Read and internalize the full PRD content.
+<prd-template>
 
-### 2. Identify the target team and project
+## Problem Statement
 
-Ask the user which Linear team the issues should be created under (required for creating issues). Also ask which project to associate the issues with, if applicable.
+The problem that the user is facing, from the user's perspective.
 
-Use `Linear:list_projects` or `Linear:get_project` to confirm the project exists. Use `Linear:list_issue_labels` if you need to find relevant labels for the tickets.
+## Solution
 
-### 3. Explore the codebase (if applicable)
+The solution to the problem, from the user's perspective.
 
-If the PRD references a codebase, read the key modules and integration layers referenced. Identify:
+## User Stories
 
-- The distinct integration layers the feature touches (e.g., DB/schema, API/backend, UI, tests, config)
-- Existing patterns for similar features
-- Natural seams where work can be parallelized
+A LONG, numbered list of user stories. Each user story should be in the format of:
 
-If no codebase is available or relevant, skip this step.
+1. As an <actor>, I want a <feature>, so that <benefit>
 
-### 4. Draft vertical slices
+<user-story-example>
+1. As a mobile bank customer, I want to see balance on my accounts, so that I can make better informed decisions about my spending
+</user-story-example>
 
-Break the PRD into **tracer bullet** plans. Each plan is a thin vertical slice that cuts through ALL integration layers end-to-end, NOT a horizontal slice of one layer.
+This list of user stories should be extremely extensive and cover all aspects of the feature.
 
-<vertical-slice-rules>
-- Each slice delivers a narrow but COMPLETE path through every layer (schema, API, UI, tests)
-- A completed slice is demoable or verifiable on its own
-- Prefer many thin slices over few thick ones
-- The first slice should be the simplest possible end-to-end path (the "hello world" tracer bullet)
-- Later slices add breadth: edge cases, additional user stories, polish
-</vertical-slice-rules>
+## Implementation Decisions
 
-### 5. Quiz the user
+A list of implementation decisions that were made. This can include:
 
-Present the proposed breakdown as a numbered list. For each slice, show:
+- The modules that will be built/modified
+- The interfaces of those modules that will be modified
+- Technical clarifications from the developer
+- Architectural decisions
+- Schema changes
+- API contracts
+- Specific interactions
 
-- **Title**: short descriptive name
-- **Layers touched**: which integration layers this slice cuts through
-- **Blocked by**: which other slices (if any) must complete first
-- **User stories covered**: which user stories from the PRD this addresses
+Do NOT include specific file paths or code snippets. They may end up being outdated very quickly.
 
-Ask the user:
+## Testing Decisions
 
-- Does the granularity feel right? (too coarse / too fine)
-- Are the dependency relationships correct?
-- Should any slices be merged or split further?
-- Is the ordering right for the first tracer bullet?
-- Are there any slices missing?
+A list of testing decisions that were made. Include:
 
-Iterate until the user approves the breakdown.
+- A description of what makes a good test (only test external behavior, not implementation details)
+- Which modules will be tested
+- Prior art for the tests (i.e. similar types of tests in the codebase)
 
-### 6. Create Linear Issues
+## Out of Scope
 
-For each approved slice, create a Linear issue using `Linear:save_issue`. Create issues in dependency order (blockers first) so you can set up blocking relationships using real issue IDs.
+A description of the things that are out of scope for this PRD.
 
-For each issue, set:
+## Further Notes
 
-- **title**: A clear, descriptive title for the slice (required)
-- **team**: The team the user specified (required)
-- **description**: Use the issue body template below (as Markdown)
-- **project**: The project the user specified (if any)
-- **labels**: Any relevant labels
-- **priority**: Based on the slice's position in the dependency chain (earlier = higher priority)
-- **blockedBy**: Array of issue IDs for any slices that must complete first
+Any further notes about the feature.
 
-After creating each issue, note the returned issue ID so you can reference it in the `blockedBy` field of subsequent issues.
-
-<issue-body-template>
-## Parent PRD
-
-This issue is part of the PRD: **[PRD Title]** (link to the Linear document if available)
-
-## What to build
-
-A concise description of this vertical slice. Describe the end-to-end behavior, not layer-by-layer implementation. Reference specific sections of the parent PRD rather than duplicating content.
-
-## Acceptance criteria
-
-- [ ] Criterion 1
-- [ ] Criterion 2
-- [ ] Criterion 3
-
-## User stories addressed
-
-Reference by number from the parent PRD:
-
-- User story 3
-- User story 7
-</issue-body-template>
-
-### 7. Print a summary
-
-After creating all issues, print a summary table with the Linear issue identifiers:
-
-```
-| Identifier | Title                  | Blocked by | Priority |
-|------------|------------------------|------------|----------|
-| TEAM-42    | Basic widget creation  | None       | High     |
-| TEAM-43    | Widget listing         | TEAM-42    | Normal   |
-```
-
-Let the user know all issues have been created in Linear and they can view them in their workspace.
-
-Do NOT modify the parent PRD document.
+</prd-template>
